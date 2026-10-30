@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Leaf & Lore API",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\run_local.ps1",
+        "-ApiOnly"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "leaf-lore-api",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting the Leaf & Lore API\\.\\.\\.|Leaf & Lore API is already healthy on port 8080\\.",
+          "endsPattern": "Leaf & Lore API is healthy\\.|Leaf & Lore API is already healthy on port 8080\\."
+        }
+      }
+    }
+  ]
+}
