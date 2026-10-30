@@ -127,6 +127,19 @@ API process started by the launcher. If the Flutter web app is already running,
 start just the API with
 `powershell -NoProfile -ExecutionPolicy Bypass -File .\run_local.ps1 -ApiOnly`.
 
+### Offline phone presentation
+
+The login screen includes **Explore offline demo**. It opens a standalone
+presentation with sample books, listings, orders, activity, and a profile; it
+does not contact the API and works without USB or internet. A persistent banner
+marks the content as sample-only. The normal sign-in and backend-powered app
+remain available and unchanged. Build and install the presentation APK with:
+
+```powershell
+flutter build apk --release
+adb install -r .\build\app\outputs\flutter-apk\app-release.apk
+```
+
 ### 1. Start the Backend API
 
 To start with MySQL:

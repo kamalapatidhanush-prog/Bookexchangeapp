@@ -12,6 +12,7 @@ import 'package:book_exchange_app/models/catalog_book.dart';
 import 'package:book_exchange_app/models/library_models.dart';
 import 'package:book_exchange_app/ui/app_shell.dart';
 import 'package:book_exchange_app/ui/screens/discover_screen.dart';
+import 'package:book_exchange_app/ui/screens/demo_showcase_screen.dart';
 import 'package:book_exchange_app/ui/screens/list_book_screen.dart';
 import 'package:book_exchange_app/ui/screens/ledger_sheet.dart';
 import 'package:book_exchange_app/ui/screens/orders_screen.dart';
@@ -51,6 +52,58 @@ void main() {
 
     expect(find.text('Enter your name'), findsOneWidget);
     expect(find.text('Enter a valid email'), findsOneWidget);
+  });
+
+  testWidgets('offline showcase runs with sample content and navigation', (
+    WidgetTester tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 800);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(home: DemoShowcaseScreen(onExit: () {})),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'OFFLINE DEMO  ·  Sample books and activity only; no real orders or payments',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Popular books'), findsOneWidget);
+    expect(find.text('The Hobbit'), findsWidgets);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Discover').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Search title, author, genre...'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'Atomic Habits');
+    await tester.pumpAndSettle();
+    expect(find.text('Atomic Habits'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('login can open the offline showcase without backend access', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const LeafAndLoreApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign In'), findsOneWidget);
+    await tester.ensureVisible(find.text('Explore offline demo'));
+    await tester.tap(find.text('Explore offline demo'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'OFFLINE DEMO  ·  Sample books and activity only; no real orders or payments',
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('MainAppShell displays 5 core navigation tabs', (

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../backend.dart';
 import 'screens/activity_screen.dart';
+import 'screens/demo_showcase_screen.dart';
 import 'screens/discover_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/orders_screen.dart';
@@ -468,6 +469,22 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
+            if (!_isRegistering)
+              Center(
+                child: TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => DemoShowcaseScreen(
+                          onExit: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.visibility_outlined),
+                  label: const Text('Explore offline demo'),
+                ),
+              ),
           ],
         ),
       ),
