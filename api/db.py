@@ -8,9 +8,25 @@ DB_PORT = int(os.getenv('DB_PORT', '3306'))
 DB_USER = os.getenv('DB_USER', 'root')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_NAME = os.getenv('DB_NAME', 'bookexchange')
+DB_UNIX_SOCKET = os.getenv('DB_UNIX_SOCKET')
 DB_TYPE = os.getenv('DB_TYPE', 'auto')  # 'mysql', 'sqlite', or 'auto'
 
 _ACTIVE_DB_TYPE = None
+
+
+def _mysql_connection_options(include_database=True):
+    options = {
+        'user': DB_USER,
+        'password': DB_PASSWORD or '',
+    }
+    if DB_UNIX_SOCKET:
+        options['unix_socket'] = DB_UNIX_SOCKET
+    else:
+        options['host'] = DB_HOST
+        options['port'] = DB_PORT
+    if include_database:
+        options['database'] = DB_NAME
+    return options
 
 
 def get_db_type():
@@ -33,13 +49,7 @@ def get_db_type():
             raise RuntimeError('DB_NAME contains unsupported characters.')
         try:
             import mysql.connector
-            conn = mysql.connector.connect(
-                host=DB_HOST,
-                port=DB_PORT,
-                user=DB_USER,
-                password=DB_PASSWORD or '',
-                database=DB_NAME,
-            )
+            conn = mysql.connector.connect(**_mysql_connection_options())
             conn.close()
             _ACTIVE_DB_TYPE = 'mysql'
             return _ACTIVE_DB_TYPE
@@ -52,10 +62,7 @@ def get_db_type():
         try:
             import mysql.connector
             conn = mysql.connector.connect(
-                host=DB_HOST,
-                port=DB_PORT,
-                user=DB_USER,
-                password=DB_PASSWORD or '',
+                **_mysql_connection_options(include_database=False)
             )
             cursor = conn.cursor()
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME} CHARACTER SET utf8mb4")
@@ -262,13 +269,7 @@ def db_connection():
     db_type = get_db_type()
     if db_type == 'mysql':
         import mysql.connector
-        conn = mysql.connector.connect(
-            host=DB_HOST,
-            port=DB_PORT,
-            user=DB_USER,
-            password=DB_PASSWORD or '',
-            database=DB_NAME,
-        )
+        conn = mysql.connector.connect(**_mysql_connection_options())
         return DatabaseConnection('mysql', conn)
     else:
         db_path = os.getenv('BOOKEXCHANGE_DB_PATH', os.path.join(os.path.dirname(__file__), 'bookexchange.db'))

@@ -1065,7 +1065,6 @@ def run_server():
     if APP_ENV == 'production':
         missing = [
             key for key in (
-                'DB_HOST',
                 'DB_USER',
                 'DB_NAME',
                 'DB_PASSWORD',
@@ -1073,6 +1072,11 @@ def run_server():
             )
             if not os.getenv(key, '').strip()
         ]
+        if not any(
+            os.getenv(key, '').strip()
+            for key in ('DB_HOST', 'DB_UNIX_SOCKET')
+        ):
+            missing.append('DB_HOST or DB_UNIX_SOCKET')
         if os.getenv('DB_TYPE', 'auto').strip().lower() != 'mysql':
             missing.append('DB_TYPE=mysql')
         if os.getenv('MYSQL_AUTO_CREATE_DATABASE', '').strip().lower() != 'false':
