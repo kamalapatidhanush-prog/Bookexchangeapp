@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../backend.dart';
 import 'screens/activity_screen.dart';
-import 'screens/demo_showcase_screen.dart';
 import 'screens/discover_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/orders_screen.dart';
@@ -51,6 +50,7 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   bool _isChecking = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -59,7 +59,23 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   Future<void> _checkAuth() async {
-    await MySqlApiService.instance.restoreSession();
+    setState(() {
+      _isChecking = true;
+      _errorMessage = null;
+    });
+    try {
+      final service = MySqlApiService.instance;
+      await service.restoreSession();
+      await service.validateRestoredSession();
+    } on Exception catch (error) {
+      if (mounted) {
+        setState(() {
+          _isChecking = false;
+          _errorMessage = error.toString().replaceFirst('Exception: ', '');
+        });
+      }
+      return;
+    }
     if (mounted) {
       setState(() => _isChecking = false);
     }
@@ -72,6 +88,45 @@ class _AuthGateState extends State<AuthGate> {
         backgroundColor: Color(0xFF1B3B2B),
         body: Center(
           child: CircularProgressIndicator(color: Color(0xFFD4A359)),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1B3B2B),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Unable to verify your account',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: _checkAuth,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Try Again'),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -469,22 +524,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            if (!_isRegistering)
-              Center(
-                child: TextButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => DemoShowcaseScreen(
-                          onExit: () => Navigator.of(context).pop(),
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.visibility_outlined),
-                  label: const Text('Explore offline demo'),
-                ),
-              ),
           ],
         ),
       ),

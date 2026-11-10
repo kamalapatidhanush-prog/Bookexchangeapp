@@ -3,7 +3,10 @@ import '../../backend.dart';
 import '../../models/library_models.dart';
 
 class WantBookScreen extends StatefulWidget {
-  const WantBookScreen({super.key});
+  const WantBookScreen({this.initialTitle, this.initialAuthor, super.key});
+
+  final String? initialTitle;
+  final String? initialAuthor;
 
   @override
   State<WantBookScreen> createState() => _WantBookScreenState();
@@ -37,6 +40,8 @@ class _WantBookScreenState extends State<WantBookScreen> {
   @override
   void initState() {
     super.initState();
+    _titleController.text = widget.initialTitle ?? '';
+    _authorController.text = widget.initialAuthor ?? '';
     _requestsFuture = _loadRequestedBooks();
   }
 

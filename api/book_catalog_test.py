@@ -25,6 +25,18 @@ assert books == [{
     'first_publish_year': None,
 }]
 assert isinstance(json.dumps(books), str)
+expanded_books = book_catalog_service._normalize_books({
+    'docs': [
+        {
+            'key': f'/works/{index}',
+            'title': f'Book {index}',
+            'author_name': ['Writer'],
+            'cover_i': index,
+        }
+        for index in range(40)
+    ],
+})
+assert len(expanded_books) == 24
 book_catalog_service._cached_books = []
 book_catalog_service._cached_at = 0.0
 payload = json.dumps({

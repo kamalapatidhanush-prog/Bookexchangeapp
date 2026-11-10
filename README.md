@@ -80,9 +80,12 @@ the buyer or seller. Sellers add carrier and tracking details with
 review per order. Legacy in-person exchange endpoints return HTTP 410 and are
 not used by the app.
 
-`GET /book-catalog` returns cached featured book metadata from Open Library
-with cover-image URLs. Catalog books are recommendations only, not seller
-inventory; only member listings in Discover can be purchased.
+`GET /book-catalog` returns up to 24 cached featured book records from Open
+Library with cover-image URLs. Catalog records are not seller inventory.
+“Buy with credits” searches available member listings for that title and opens
+the existing credit-based order flow; if no copy is listed, the buyer can post
+a prefilled community request. Only an actual available member listing can be
+ordered.
 
 ---
 
@@ -126,19 +129,6 @@ secret is not stored in the repository. Press Ctrl+C to stop the app and any
 API process started by the launcher. If the Flutter web app is already running,
 start just the API with
 `powershell -NoProfile -ExecutionPolicy Bypass -File .\run_local.ps1 -ApiOnly`.
-
-### Offline phone presentation
-
-The login screen includes **Explore offline demo**. It opens a standalone
-presentation with sample books, listings, orders, activity, and a profile; it
-does not contact the API and works without USB or internet. A persistent banner
-marks the content as sample-only. The normal sign-in and backend-powered app
-remain available and unchanged. Build and install the presentation APK with:
-
-```powershell
-flutter build apk --release
-adb install -r .\build\app\outputs\flutter-apk\app-release.apk
-```
 
 ### 1. Start the Backend API
 
@@ -190,6 +180,11 @@ CLOUDINARY_CLOUD_NAME=<cloud name>
 CLOUDINARY_API_KEY=<server-side API key>
 CLOUDINARY_API_SECRET=<server-side API secret>
 ```
+
+For Google Cloud Run with a Cloud SQL attachment, set
+`DB_UNIX_SOCKET=/cloudsql/<project-id>:<region>:<instance-name>` instead of
+`DB_HOST` and `DB_PORT`. Keep database credentials in Secret Manager, not in
+source files.
 
 The checked-in `.env.example` is a variable-name template only; the API does not
 load `.env` files automatically. Use the hosting provider's secret manager or

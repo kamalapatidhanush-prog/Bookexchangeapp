@@ -1,3 +1,9 @@
+num? _numberValue(Object? value) {
+  if (value is num) return value;
+  if (value is String) return num.tryParse(value);
+  return null;
+}
+
 class LibraryBook {
   const LibraryBook({
     required this.id,
@@ -320,11 +326,11 @@ class CreditSummary {
 
   factory CreditSummary.fromMap(Map<String, dynamic>? map) {
     return CreditSummary(
-      earned: (map?['earned'] as num?)?.toInt() ?? 0,
-      purchased: (map?['purchased'] as num?)?.toInt() ?? 0,
-      spent: (map?['spent'] as num?)?.toInt() ?? 0,
-      held: (map?['held'] as num?)?.toInt() ?? 0,
-      refunded: (map?['refunded'] as num?)?.toInt() ?? 0,
+      earned: _numberValue(map?['earned'])?.toInt() ?? 0,
+      purchased: _numberValue(map?['purchased'])?.toInt() ?? 0,
+      spent: _numberValue(map?['spent'])?.toInt() ?? 0,
+      held: _numberValue(map?['held'])?.toInt() ?? 0,
+      refunded: _numberValue(map?['refunded'])?.toInt() ?? 0,
     );
   }
 

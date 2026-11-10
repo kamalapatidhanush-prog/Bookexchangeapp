@@ -41,6 +41,16 @@ class ApiAuthResponse {
   final String token;
 }
 
+class ApiRequestException implements Exception {
+  const ApiRequestException(this.statusCode, this.message);
+
+  final int statusCode;
+  final String message;
+
+  @override
+  String toString() => 'Exception: $message';
+}
+
 class MySqlApiService {
   MySqlApiService._() : _client = http.Client();
 
@@ -127,10 +137,21 @@ class MySqlApiService {
       final msg = decoded is Map && decoded['message'] != null
           ? decoded['message']
           : 'Server error (${response.statusCode})';
-      throw Exception(msg);
+      throw ApiRequestException(response.statusCode, msg.toString());
     }
 
     return Map<String, dynamic>.from(decoded as Map);
+  }
+
+  Future<void> validateRestoredSession() async {
+    if (!isAuthenticated) return;
+
+    try {
+      await _request('GET', '/api/profile');
+    } on ApiRequestException catch (error) {
+      if (error.statusCode != 401) rethrow;
+      await _clearLocalSession();
+    }
   }
 
   Future<void> restoreSession() async {
@@ -226,6 +247,15 @@ class MySqlApiService {
       }
     }
 
+    await _clearLocalSession();
+    if (requestError != null) {
+      throw Exception(
+        'Signed out on this device, but the server could not revoke the session: $requestError',
+      );
+    }
+  }
+
+  Future<void> _clearLocalSession() async {
     _token = null;
     currentUser = null;
     final prefs = await SharedPreferences.getInstance();
@@ -236,11 +266,6 @@ class MySqlApiService {
       prefs.remove(_userEmailKey),
       prefs.remove(_userLocationKey),
     ]);
-    if (requestError != null) {
-      throw Exception(
-        'Signed out on this device, but the server could not revoke the session: $requestError',
-      );
-    }
   }
 
   // User Profile
@@ -291,7 +316,10 @@ class MySqlApiService {
     final query = <String, String>{'limit': '$limit'};
     if (cursor != null) query['cursor'] = cursor;
     final result = await _request('GET', '/api/credits', queryParams: query);
-    final balance = (result['balance'] as num?)?.toInt() ?? 0;
+    final rawBalance = result['balance'];
+    final balance = rawBalance is num
+        ? rawBalance.toInt()
+        : int.tryParse(rawBalance?.toString() ?? '') ?? 0;
     final rawLedger = result['ledger'] as List? ?? [];
     final ledger = rawLedger
         .map(

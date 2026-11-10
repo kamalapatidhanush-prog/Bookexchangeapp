@@ -91,10 +91,11 @@ def get_credit_account(conn, user_id, limit=50, cursor=None):
         'has_more': has_more,
         'next_cursor': next_cursor,
         'summary': {
-            'earned': totals['earned'],
-            'purchased': totals['purchased'],
-            'spent': exchange_totals['spent'] + marketplace_totals['spent'],
-            'held': exchange_totals['held'],
-            'refunded': totals['refunded'],
+            'earned': int(totals['earned'] or 0),
+            'purchased': int(totals['purchased'] or 0),
+            'spent': int(exchange_totals['spent'] or 0)
+            + int(marketplace_totals['spent'] or 0),
+            'held': int(exchange_totals['held'] or 0),
+            'refunded': int(totals['refunded'] or 0),
         },
     }

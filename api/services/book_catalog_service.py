@@ -6,6 +6,7 @@ from urllib.request import Request, urlopen
 
 
 _CACHE_SECONDS = 1800
+_FEATURED_BOOK_LIMIT = 24
 _cache_lock = threading.Lock()
 _cached_books = []
 _cached_at = 0.0
@@ -33,7 +34,7 @@ def _normalize_books(payload):
             'cover_url': f'https://covers.openlibrary.org/b/id/{cover_id}-L.jpg',
             'first_publish_year': entry.get('first_publish_year'),
         })
-        if len(books) == 12:
+        if len(books) == _FEATURED_BOOK_LIMIT:
             break
     return books
 
@@ -46,7 +47,7 @@ def get_featured_books():
             return list(_cached_books)
 
     url = (
-        'https://openlibrary.org/search.json?subject=fiction&limit=40'
+        'https://openlibrary.org/search.json?subject=fiction&limit=80'
         '&fields=key,title,author_name,cover_i,first_publish_year'
     )
     request = Request(url, headers={'User-Agent': 'LeafAndLore/1.0'})
